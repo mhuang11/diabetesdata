@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Load Packages
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(ggcorrplot))
+suppressPackageStartupMessages(library("GGally"))
 
 # Load Dataset
 diabetes <- read_csv("diabetes.csv")
@@ -121,20 +121,30 @@ legend("topleft",
 ```
 Fromo Plot 2, the distribution is shifted towards the left for those without diabetes. This indicates those **without diabetes generally have a lower blood glucose level.**
 
-**Welch Two Sample t-Test**
+## Welch Two Sample t-Test
 ```{r, warning=FALSE, results='hide', message=FALSE}
 t.test(with_d$DiabetesPedigreeFunction, without$DiabetesPedigreeFunction)
 ```
 
-## Correlation Between Each Variable
+# Data Correlation Analysis
 
 Scatter Matrix of All Columns:
 ```{r, warning=FALSE, results='hide', message=FALSE}
-ggcorrplot(diabetes[,-9], name = "corr", label = TRUE) + 
+ggcorr(diabetes[,-9], name = "corr", label = TRUE) + 
   theme(legend.position = "none") +
   labs(title = "Correlation Plot of Variance") +
   theme(plot.title = element_text(face = "bold", color = "black", hjust = 0.5, size = 12))
 ```
 
+Pregnancy, Age, Insulin, SkinThickness are having higher correlation.
 
+
+
+## Basic GLM
+
+## Logistic Regression
+
+## Decision Tree
+
+## Naive Bayes
 
