@@ -1,0 +1,140 @@
+---
+title: "Diabetes Analysis"
+author: "Marina Huang"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load Packages
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(ggcorrplot))
+
+# Load Dataset
+diabetes <- read_csv("diabetes.csv")
+```
+
+***
+
+# The Data
+
+In this project, I practice data analysis on health care data using R. I will dive into Machine Learning Algorithms and Generalized Linear Models.
+
+The dataset can be downloaded from this [link (click)](https://www.kaggle.com/uciml/pima-indians-diabetes-database).
+It is originally from the National Institute of Diabetes and Digestive and Kidney Diseases. The objective of this dataset is to diagnostically predict whether or not a patient has diabetes, based on certain diagnostic measurements included in the dataset. All patients here are females at least 21 years old of Pima Indian heritage.
+
+This dataset consist of several medical predictor (independent) variables and one target (dependent) variable, `outcome`. Independent variables include the number of pregnancies the patient has had, their BMI, insulin level, age, and so on. 
+
+The summary of the dataset is displayed here:
+```{r, warning=FALSE, message=FALSE}
+summary(diabetes)
+```
+
+\newpage
+
+# Explorative Data Analysis
+
+## Univariate Data Analysis
+
+Univariate analysis explores each variable in a data set, separately. It looks at the range of values, as well as the central tendency of the values. 
+
+Let's take a look at the effect of `Pregnancies`, `Age`, `Glucose`, and `BMI` on diabetes:
+```{r, warning=FALSE, results='hide',message=FALSE}
+par(mfrow = c(2,2))
+hist(diabetes$Pregnancies)
+hist(diabetes$Age)
+hist(diabetes$Glucose)
+hist(diabetes$BMI)
+```
+
+From these distribution graphs, `Age` and `Pregnancies` area not in normal distribution as expected, since the underlying population should not be normally distributed either. Glucose level and BMI are following a normal distribution. 
+
+\newpage
+
+Now looking into `BloodPressure`:
+```{r, warning=FALSE, results='hide', message=FALSE, out.width = "70%"}
+boxplot(diabetes$BloodPressure,
+        ylab = "Blood Pressure")
+```
+
+The impact of `glucose` on diabetes:
+```{r, warning=FALSE, results='hide', message=FALSE, out.width = "70%"}
+diabetes %>%
+  ggplot(aes(x = Glucose)) +
+  geom_histogram(fill = "sky blue", color = "black") +
+  facet_grid(Outcome~.)
+```
+
+
+**Goal:** Assess the mean difference of glucose levels between the positive and negative groups. 
+
+Null Hypothesis: There is no significant difference between glucose levels in positive and negative groups.
+
+**Conditions**
+
+- Individuals are independent of each other.
+- Distribution is skewed (not normal), but there is >30 samples.
+- Both the groups are independent of each other and the sample size is lesser than 10% of the population.
+
+```{r, warning=FALSE, message=FALSE}
+t.test(Glucose ~ Outcome, diabetes)
+```
+The p-value is < 0.05 (the critical value), so we reject the null hypothesis for the alternate hypothesis.
+We can say that we are, 95% confident, that the average glucose levels for individuals with diabetes is > the people without diabetes. 
+
+**Box Plot of the impact of Age on Diabetes Pedigree Function**
+```{r, warning=FALSE, results='hide', message=FALSE}
+par(mfrow = c(1,2))
+
+# Boxplot
+
+with_d <- diabetes[diabetes$Outcome == 1,]
+without <- diabetes[diabetes$Outcome == 0,]
+
+boxplot(diabetes$DiabetesPedigreeFunction ~ diabetes$Outcome,
+                         ylab = "Diabetes Pedigree Function (DPF)",
+                         xlab = "Diabetes Presence",
+                         main = "Plot 1",
+                         outline = TRUE)
+
+# Density Plot
+
+plot(density(with_d$Glucose),
+     xlim = c(0, 250),
+     ylim = c(0.00, 0.02),
+     xlab = "Glucose Level",
+     main = "Plot 2",
+     lwd = 2)
+
+lines(density(without$Glucose),
+      col = "orange",
+      lwd = 2)
+
+legend("topleft",
+       col = c("blue", "red"),
+       legend = c("With Diabetes", "Without Diabetes"), 
+       lwd = 2,
+       bty = "n")
+```
+Fromo Plot 2, the distribution is shifted towards the left for those without diabetes. This indicates those **without diabetes generally have a lower blood glucose level.**
+
+**Welch Two Sample t-Test**
+```{r, warning=FALSE, results='hide', message=FALSE}
+t.test(with_d$DiabetesPedigreeFunction, without$DiabetesPedigreeFunction)
+```
+
+## Correlation Between Each Variable
+
+Scatter Matrix of All Columns:
+```{r, warning=FALSE, results='hide', message=FALSE}
+ggcorrplot(diabetes[,-9], name = "corr", label = TRUE) + 
+  theme(legend.position = "none") +
+  labs(title = "Correlation Plot of Variance") +
+  theme(plot.title = element_text(face = "bold", color = "black", hjust = 0.5, size = 12))
+```
+
+
+
