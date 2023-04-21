@@ -12,6 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library("GGally"))
+suppressPackageStartupMessages(library(party))
+suppressPackageStartupMessages(library(plyr))
+suppressPackageStartupMessages(library(readr))
 
 # Load Dataset
 diabetes <- read_csv("diabetes.csv")
@@ -21,7 +24,7 @@ diabetes <- read_csv("diabetes.csv")
 
 # The Data
 
-In this project, I practice data analysis on health care data using R. I will dive into Machine Learning Algorithms and Generalized Linear Models.
+In this project, I practice data analysis on health care data using R.
 
 The dataset can be downloaded from this [link (click)](https://www.kaggle.com/uciml/pima-indians-diabetes-database).
 It is originally from the National Institute of Diabetes and Digestive and Kidney Diseases. The objective of this dataset is to diagnostically predict whether or not a patient has diabetes, based on certain diagnostic measurements included in the dataset. All patients here are females at least 21 years old of Pima Indian heritage.
@@ -119,10 +122,10 @@ legend("topleft",
        lwd = 2,
        bty = "n")
 ```
-Fromo Plot 2, the distribution is shifted towards the left for those without diabetes. This indicates those **without diabetes generally have a lower blood glucose level.**
+From Plot 2, the distribution is shifted towards the left for those without diabetes. This indicates those **without diabetes generally have a lower blood glucose level.**
 
 ## Welch Two Sample t-Test
-```{r, warning=FALSE, results='hide', message=FALSE}
+```{r, warning=FALSE, message=FALSE}
 t.test(with_d$DiabetesPedigreeFunction, without$DiabetesPedigreeFunction)
 ```
 
@@ -130,21 +133,20 @@ t.test(with_d$DiabetesPedigreeFunction, without$DiabetesPedigreeFunction)
 
 Scatter Matrix of All Columns:
 ```{r, warning=FALSE, results='hide', message=FALSE}
-ggcorr(diabetes[,-9], name = "corr", label = TRUE) + 
-  theme(legend.position = "none") +
+ggcorr(diabetes[,-9], name = "Correlation", label = TRUE) + 
+  theme(legend.position = "right") +
   labs(title = "Correlation Plot of Variance") +
   theme(plot.title = element_text(face = "bold", color = "black", hjust = 0.5, size = 12))
 ```
 
 Pregnancy, Age, Insulin, SkinThickness are having higher correlation.
 
+# Conclusion
 
+To understand what variables have an impact on diabetes, we first took a look at each variable separately (univariate data analysis). By displaying histograms of some dependent variables, we see that `Age` and `Pregnancies` are not normally distributed, which was to be expected since the underlying population should not be normally distributed by either. Glucose and BMI are following a normal distribution. 
 
-## Basic GLM
+We conducted a Welch's Two Sample t-Test to determine if glucose levels between positive and negative groups of having diabetes had a significant difference. The p-value of this test was below the critical value of < 0.05, so we rejected the null hypothesis. This means that we are 95% confident that the average glucose levels for individuals with diabetes is greater than the people without diabetes. 
 
-## Logistic Regression
+Knowing the results from the t-Test, we plotted a line graph of glucose levels in people with and without diabetes. The plot indicated that those without diabetes generally have a lower  blood glucose level. 
 
-## Decision Tree
-
-## Naive Bayes
-
+We can also look at the overall correlation between the variables with a correlation plot. Age, Pregnancies, Insulin, and Skin Thickness have high correlation. 
